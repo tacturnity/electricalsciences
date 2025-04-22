@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter Summaries Menu</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Embedded CSS Styles -->
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Fonts */
+        body {
+            font-family: 'Roboto', sans-serif; /* Clean sans-serif for body text */
+            background-color: #1a1a1a; /* Dark background */
+            color: #e0e0e0; /* Light grey text */
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        h1, h2 {
+            font-family: 'Merriweather', serif; /* Classy serif for headings */
+            color: #cc0000; /* Red color for headings */
+            margin-bottom: 1em;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            border-bottom: 2px solid #cc0000;
+            padding-bottom: 10px;
+            margin-bottom: 1.5em;
+        }
+
+        h2 {
+            font-size: 1.8em;
+            color: #d65a5a; /* Lighter red for sub-heading */
+        }
+
+        main {
+            max-width: 800px;
+            margin: 20px auto; /* Center the content */
+            background-color: #2b2b2b; /* Slightly lighter dark background for content */
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        #chapter-list {
+            list-style: none; /* Remove default bullets */
+            padding-left: 0;
+        }
+
+        #chapter-list li {
+            background-color: #333;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #chapter-list li:hover {
+            background-color: #444;
+        }
+
+        #chapter-list a {
+            display: block;
+            padding: 15px 20px;
+            text-decoration: none;
+            color: #ff6b6b; /* Brighter red for links */
+            font-weight: 500;
+            font-size: 1.1em;
+            transition: color 0.3s ease;
+        }
+
+        #chapter-list a:hover,
+        #chapter-list a:focus {
+            color: #ff8f8f; /* Lighter red on hover/focus */
+            outline: none; /* Remove default focus outline if desired, ensure visibility */
+        }
+
+        #loading-message,
+        .error-message {
+            color: #aaa;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+            background-color: transparent !important; /* Override hover */
+        }
+
+        .error-message {
+             color: #ff6b6b !important; /* Make errors more visible */
+             font-weight: bold;
+             background-color: transparent !important;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Chapter Summaries</h1>
+    </header>
+
+    <main>
+        <h2>Available Chapters</h2>
+        <ul id="chapter-list">
+            <!-- Chapter links will be dynamically inserted here by JavaScript -->
+            <li id="loading-message">Loading chapters...</li>
+        </ul>
+    </main>
+
+    <footer>
+        <p>Generated dynamically via GitHub API</p>
+    </footer>
+
+    <!-- Embedded JavaScript Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chapterList = document.getElementById('chapter-list');
+            const loadingMessage = document.getElementById('loading-message');
+
+            // --- CONFIGURATION ---
+            // !!! IMPORTANT: Replace 'YOUR_USERNAME' and 'YOUR_REPONAME' below !!!
+            const githubUsername = 'tacturnity';
+            const githubRepoName = 'electricalsciences';
+            // Make sure the path exactly matches your folder structure
+            // This path is RELATIVE to this index.html file
+            const chaptersPath = 'chapter summaries/chapters';
+            // ---------------------
+
+            // Construct the GitHub API URL
+            // Note: We encode the path components to handle spaces etc. correctly
+            const encodedPath = chaptersPath.split('/').map(encodeURIComponent).join('/');
+            const apiUrl = `https://api.github.com/repos/${githubUsername}/${githubRepoName}/contents/${encodedPath}`;
+
+            console.log(`Fetching chapter list from: ${apiUrl}`); // For debugging
+
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                         // Try to get more specific error info if possible
+                         return response.json().catch(() => null).then(errorData => {
+                             let errorMsg = `GitHub API error: ${response.status} ${response.statusText}`;
+                             if(errorData && errorData.message) {
+                                 errorMsg += ` - ${errorData.message}`;
+                             }
+                             // Specific check for common errors
+                             if (response.status === 404) {
+                                 errorMsg += ` (Is the username, reponame, or path correct? Is the repository public?)`;
+                             }
+                             if (response.status === 403) {
+                                 errorMsg += ` (API rate limit exceeded or private repository access issue?)`;
+                             }
+                            throw new Error(errorMsg);
+                         });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Clear the loading message
+                    if (loadingMessage) {
+                        chapterList.removeChild(loadingMessage);
+                    }
+
+                    // Check if data is an array (it should be for directory contents)
+                    if (!Array.isArray(data)) {
+                         console.error("Received data is not an array:", data);
+                         throw new Error('Invalid data format received from GitHub API. Expected an array of files.');
+                    }
+
+                    const htmlFiles = data.filter(item =>
+                        item.type === 'file' && item.name.toLowerCase().endsWith('.html')
+                    );
+
+                    if (htmlFiles.length === 0) {
+                        const li = document.createElement('li');
+                        li.textContent = 'No chapter files found in the specified directory.';
+                        li.classList.add('error-message');
+                        chapterList.appendChild(li);
+                        return;
+                    }
+
+                    // Sort files alphabetically by name (optional)
+                    htmlFiles.sort((a, b) => a.name.localeCompare(b.name));
+
+                    // Create list items for each HTML file
+                    htmlFiles.forEach(file => {
+                        const listItem = document.createElement('li');
+                        const link = document.createElement('a');
+
+                        // Create a nice title from the filename
+                        let title = file.name.replace(/\.html$/i, ''); // Remove .html extension (case-insensitive)
+                        title = title.replace(/[-_]/g, ' '); // Replace hyphens/underscores with spaces
+                        title = title.replace(/\b\w/g, char => char.toUpperCase()); // Capitalize first letter of each word
+
+                        // Link directly to the file via its relative path
+                        // The link path MUST be relative to index.html
+                        link.href = `${chaptersPath}/${file.name}`;
+                        link.textContent = title;
+
+                        listItem.appendChild(link);
+                        chapterList.appendChild(listItem);
+                    });
+
+                })
+                .catch(error => {
+                    console.error('Error fetching or processing chapter list:', error);
+                    // Clear loading message if it's still there
+                    if (loadingMessage && loadingMessage.parentNode === chapterList) {
+                        chapterList.removeChild(loadingMessage);
+                    }
+                    // Display error message to the user
+                    const errorItem = document.createElement('li');
+                    errorItem.textContent = `Error loading chapters: ${error.message}. Check console for details.`;
+                    errorItem.classList.add('error-message');
+                    chapterList.appendChild(errorItem);
+                });
+        });
+    </script>
+
+</body>
+</html>
