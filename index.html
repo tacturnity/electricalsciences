@@ -19,93 +19,108 @@
             box-sizing: border-box;
         }
 
-        /* Fonts */
+        /* Fonts & Base Styling */
         body {
-            font-family: 'Roboto', sans-serif; /* Clean sans-serif for body text */
-            background-color: #1a1a1a; /* Dark background */
-            color: #e0e0e0; /* Light grey text */
-            line-height: 1.6;
-            padding: 20px;
+            font-family: 'Roboto', sans-serif;
+            background-color: #1f1f1f; /* Slightly softer dark background */
+            color: #e8e8e8; /* Slightly lighter grey text */
+            line-height: 1.7;
+            padding: 25px;
         }
 
+        /* Headings */
         h1, h2 {
-            font-family: 'Merriweather', serif; /* Classy serif for headings */
-            color: #cc0000; /* Red color for headings */
-            margin-bottom: 1em;
+            font-family: 'Merriweather', serif;
             text-align: center;
+            margin-bottom: 1.2em;
         }
 
         h1 {
-            font-size: 2.5em;
-            border-bottom: 2px solid #cc0000;
-            padding-bottom: 10px;
-            margin-bottom: 1.5em;
+            font-size: 2.8em;
+            color: #e53935; /* A slightly less harsh red */
+            padding-bottom: 15px;
+            margin-bottom: 1.8em;
+            border-bottom: 3px solid #e53935;
+            font-weight: 700;
         }
 
         h2 {
-            font-size: 1.8em;
-            color: #d65a5a; /* Lighter red for sub-heading */
+            font-size: 1.9em;
+            color: #f05545; /* Lighter, related red for sub-heading */
+            font-weight: 400;
+             margin-bottom: 1.5em;
         }
 
+        /* Main Content Area */
         main {
-            max-width: 800px;
-            margin: 20px auto; /* Center the content */
-            background-color: #2b2b2b; /* Slightly lighter dark background for content */
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            max-width: 850px;
+            margin: 30px auto;
+            background-color: #2c2c2c; /* Slightly darker content background */
+            padding: 35px 40px;
+            border-radius: 10px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.5);
         }
 
+        /* Chapter List Styling */
         #chapter-list {
-            list-style: none; /* Remove default bullets */
+            list-style: none;
             padding-left: 0;
         }
 
         #chapter-list li {
-            background-color: #333;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
+            background-color: #383838;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            transition: background-color 0.25s ease-in-out, transform 0.15s ease;
+             border-left: 4px solid transparent; /* Add space for potential highlight */
         }
 
         #chapter-list li:hover {
-            background-color: #444;
+            background-color: #4a4a4a;
+            transform: scale(1.01); /* Subtle scale effect */
+             border-left-color: #ff6b6b; /* Highlight bar on hover */
         }
 
         #chapter-list a {
             display: block;
-            padding: 15px 20px;
+            padding: 16px 25px;
             text-decoration: none;
-            color: #ff6b6b; /* Brighter red for links */
+            color: #ff8f8f; /* Brighter, slightly softer red for links */
             font-weight: 500;
-            font-size: 1.1em;
-            transition: color 0.3s ease;
+            font-size: 1.15em;
+            transition: color 0.25s ease;
         }
 
-        #chapter-list a:hover,
-        #chapter-list a:focus {
-            color: #ff8f8f; /* Lighter red on hover/focus */
-            outline: none; /* Remove default focus outline if desired, ensure visibility */
+         /* Remove hover text color change, handled by li hover */
+        #chapter-list li:hover a {
+            color: #ffacac; /* Lighten link slightly on hover */
         }
 
+
+        /* Loading/Error Message Styling */
         #loading-message,
         .error-message {
             color: #aaa;
             font-style: italic;
             text-align: center;
-            padding: 20px;
-            background-color: transparent !important; /* Override hover */
+            padding: 25px;
+            background-color: transparent !important; /* Override list item background */
+            border-radius: 6px; /* Match list items */
+             border-left: none !important; /* No border */
         }
 
         .error-message {
-             color: #ff6b6b !important; /* Make errors more visible */
-             font-weight: bold;
-             background-color: transparent !important;
+             color: #e53935 !important; /* Use main red for error */
+             font-weight: 500;
+             font-style: normal;
+             background-color: rgba(229, 57, 53, 0.08) !important; /* Subtle red background for error */
+             border: 1px solid #e53935;
         }
 
+        /* Footer */
         footer {
             text-align: center;
-            margin-top: 40px;
+            margin-top: 50px;
             font-size: 0.9em;
             color: #888;
         }
@@ -139,21 +154,22 @@
             const githubUsername = 'tacturnity';
             const githubRepoName = 'electricalsciences';
 
-            // IMPORTANT: This path is for the GITHUB API call.
-            // It MUST be relative to the REPOSITORY ROOT.
-            const chaptersApiPath = 'chapter summaries/chapters';
+            // CORRECTED: Path for the GITHUB API call.
+            // Since 'chapters' folder is in the root, the path is just 'chapters'
+            const chaptersApiPath = 'chapters'; // <--- CHANGE 1: Removed "chapter summaries/"
 
-            // This path is used for the actual links (<a href="...">).
-            // Since this index.html is *inside* 'chapter summaries', the
-            // relative path to the chapters is simply the 'chapters' directory itself.
-            const relativeLinkPath = 'chapters';
+            // CORRECTED: Path used for the actual links (<a href="...">).
+            // Since index.html is in the root and chapters are in './chapters/',
+            // the relative path is just 'chapters'
+            const relativeLinkPath = 'chapters'; // <--- CHANGE 2: This is correct if index.html is in root
+
             // ---------------------
 
             // Construct the GitHub API URL (uses path relative to repo root)
-            const encodedPath = chaptersApiPath.split('/').map(encodeURIComponent).join('/');
+            const encodedPath = chaptersApiPath.split('/').map(encodeURIComponent).join('/'); // Will just encode 'chapters'
             const apiUrl = `https://api.github.com/repos/${githubUsername}/${githubRepoName}/contents/${encodedPath}`;
 
-            console.log(`Fetching chapter list from: ${apiUrl}`); // For debugging
+            console.log(`Fetching chapter list from: ${apiUrl}`); // For debugging (Check this URL!)
 
             fetch(apiUrl)
                 .then(response => {
@@ -162,12 +178,17 @@
                          return response.json().catch(() => null).then(errorData => {
                              let errorMsg = `GitHub API error: ${response.status} ${response.statusText}`;
                              if(errorData && errorData.message) {
-                                 errorMsg += ` - ${errorData.message}`;
+                                 // Customize 404 message based on common issues
+                                 if (response.status === 404 && errorData.message.toLowerCase().includes("not found")) {
+                                    errorMsg = `GitHub API error: 404 Not Found.`;
+                                    errorMsg += ` Double-check the path ('${chaptersApiPath}') exists directly inside the '${githubRepoName}' repository root on GitHub. Also ensure the repository is public.`;
+                                 } else {
+                                     errorMsg += ` - ${errorData.message}`;
+                                 }
+                             } else if (response.status === 404) {
+                                 errorMsg += ` (Is the API path '${chaptersApiPath}' correct relative to the repo root? Is the repository public?)`;
                              }
-                             // Specific check for common errors
-                             if (response.status === 404) {
-                                 errorMsg += ` (Is the username, reponame, or API path correct? Is the repository public?)`;
-                             }
+
                              if (response.status === 403) {
                                  errorMsg += ` (API rate limit exceeded or private repository access issue?)`;
                              }
@@ -177,14 +198,14 @@
                     return response.json();
                 })
                 .then(data => {
-                    // Clear the loading message
-                    if (loadingMessage) {
-                        chapterList.removeChild(loadingMessage);
-                    }
+                    if (loadingMessage) chapterList.removeChild(loadingMessage); // Clear loading message
 
-                    // Check if data is an array
-                    if (!Array.isArray(data)) {
-                         console.error("Received data is not an array:", data);
+                    if (!Array.isArray(data)) { // Check if API returned an array (directory listing)
+                        console.error("Received data is not an array:", data);
+                         // Check if it might be an empty directory response
+                         if (typeof data === 'object' && data !== null && data.message && data.message.includes("empty")) {
+                             throw new Error('The chapters directory exists but is empty.');
+                         }
                          throw new Error('Invalid data format received from GitHub API. Expected an array of files.');
                     }
 
@@ -194,8 +215,8 @@
 
                     if (htmlFiles.length === 0) {
                         const li = document.createElement('li');
-                        li.textContent = 'No chapter files found in the specified directory via API.';
-                        li.classList.add('error-message');
+                        li.textContent = `No HTML files found in the '${chaptersApiPath}' directory.`;
+                        li.classList.add('error-message'); // Use error styling
                         chapterList.appendChild(li);
                         return;
                     }
@@ -213,11 +234,8 @@
                         title = title.replace(/[-_]/g, ' ');
                         title = title.replace(/\b\w/g, char => char.toUpperCase());
 
-                        // --- THIS IS THE CHANGED LINE ---
-                        // Use the relativeLinkPath (relative to *this* HTML file's location)
-                        link.href = `${relativeLinkPath}/${file.name}`;
-                        // --- END OF CHANGE ---
-
+                        // Create the link href (Relative path from root index.html to file in chapters folder)
+                        link.href = `${relativeLinkPath}/${file.name}`; // Should be correct now (e.g., "chapters/transformers.html")
                         link.textContent = title;
 
                         listItem.appendChild(link);
@@ -226,13 +244,13 @@
 
                 })
                 .catch(error => {
-                    console.error('Error fetching or processing chapter list:', error);
-                     if (loadingMessage && loadingMessage.parentNode === chapterList) {
+                    console.error('Error loading chapters:', error);
+                    if (loadingMessage && loadingMessage.parentNode === chapterList) { // Make sure loading msg exists before removing
                         chapterList.removeChild(loadingMessage);
                     }
                     const errorItem = document.createElement('li');
-                    errorItem.textContent = `Error loading chapters: ${error.message}. Check console for details.`;
-                    errorItem.classList.add('error-message');
+                    errorItem.textContent = `Error: ${error.message}. Check console (F12) for details.`;
+                    errorItem.classList.add('error-message'); // Apply error styling
                     chapterList.appendChild(errorItem);
                 });
         });
