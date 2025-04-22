@@ -136,17 +136,21 @@
             const loadingMessage = document.getElementById('loading-message');
 
             // --- CONFIGURATION ---
-            // !!! IMPORTANT: Replace 'YOUR_USERNAME' and 'YOUR_REPONAME' below !!!
             const githubUsername = 'tacturnity';
             const githubRepoName = 'electricalsciences';
-            // Make sure the path exactly matches your folder structure
-            // This path is RELATIVE to this index.html file
-            const chaptersPath = 'chapter summaries/chapters';
+
+            // IMPORTANT: This path is for the GITHUB API call.
+            // It MUST be relative to the REPOSITORY ROOT.
+            const chaptersApiPath = 'chapter summaries/chapters';
+
+            // This path is used for the actual links (<a href="...">).
+            // Since this index.html is *inside* 'chapter summaries', the
+            // relative path to the chapters is simply the 'chapters' directory itself.
+            const relativeLinkPath = 'chapters';
             // ---------------------
 
-            // Construct the GitHub API URL
-            // Note: We encode the path components to handle spaces etc. correctly
-            const encodedPath = chaptersPath.split('/').map(encodeURIComponent).join('/');
+            // Construct the GitHub API URL (uses path relative to repo root)
+            const encodedPath = chaptersApiPath.split('/').map(encodeURIComponent).join('/');
             const apiUrl = `https://api.github.com/repos/${githubUsername}/${githubRepoName}/contents/${encodedPath}`;
 
             console.log(`Fetching chapter list from: ${apiUrl}`); // For debugging
@@ -162,7 +166,7 @@
                              }
                              // Specific check for common errors
                              if (response.status === 404) {
-                                 errorMsg += ` (Is the username, reponame, or path correct? Is the repository public?)`;
+                                 errorMsg += ` (Is the username, reponame, or API path correct? Is the repository public?)`;
                              }
                              if (response.status === 403) {
                                  errorMsg += ` (API rate limit exceeded or private repository access issue?)`;
@@ -178,7 +182,7 @@
                         chapterList.removeChild(loadingMessage);
                     }
 
-                    // Check if data is an array (it should be for directory contents)
+                    // Check if data is an array
                     if (!Array.isArray(data)) {
                          console.error("Received data is not an array:", data);
                          throw new Error('Invalid data format received from GitHub API. Expected an array of files.');
@@ -190,13 +194,13 @@
 
                     if (htmlFiles.length === 0) {
                         const li = document.createElement('li');
-                        li.textContent = 'No chapter files found in the specified directory.';
+                        li.textContent = 'No chapter files found in the specified directory via API.';
                         li.classList.add('error-message');
                         chapterList.appendChild(li);
                         return;
                     }
 
-                    // Sort files alphabetically by name (optional)
+                    // Sort files alphabetically
                     htmlFiles.sort((a, b) => a.name.localeCompare(b.name));
 
                     // Create list items for each HTML file
@@ -204,14 +208,16 @@
                         const listItem = document.createElement('li');
                         const link = document.createElement('a');
 
-                        // Create a nice title from the filename
-                        let title = file.name.replace(/\.html$/i, ''); // Remove .html extension (case-insensitive)
-                        title = title.replace(/[-_]/g, ' '); // Replace hyphens/underscores with spaces
-                        title = title.replace(/\b\w/g, char => char.toUpperCase()); // Capitalize first letter of each word
+                        // Create title from filename
+                        let title = file.name.replace(/\.html$/i, '');
+                        title = title.replace(/[-_]/g, ' ');
+                        title = title.replace(/\b\w/g, char => char.toUpperCase());
 
-                        // Link directly to the file via its relative path
-                        // The link path MUST be relative to index.html
-                        link.href = `${chaptersPath}/${file.name}`;
+                        // --- THIS IS THE CHANGED LINE ---
+                        // Use the relativeLinkPath (relative to *this* HTML file's location)
+                        link.href = `${relativeLinkPath}/${file.name}`;
+                        // --- END OF CHANGE ---
+
                         link.textContent = title;
 
                         listItem.appendChild(link);
@@ -221,11 +227,9 @@
                 })
                 .catch(error => {
                     console.error('Error fetching or processing chapter list:', error);
-                    // Clear loading message if it's still there
-                    if (loadingMessage && loadingMessage.parentNode === chapterList) {
+                     if (loadingMessage && loadingMessage.parentNode === chapterList) {
                         chapterList.removeChild(loadingMessage);
                     }
-                    // Display error message to the user
                     const errorItem = document.createElement('li');
                     errorItem.textContent = `Error loading chapters: ${error.message}. Check console for details.`;
                     errorItem.classList.add('error-message');
